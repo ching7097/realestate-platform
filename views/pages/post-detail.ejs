@@ -1,0 +1,100 @@
+<section class="page-hero compact-hero">
+  <div class="container">
+    <p class="eyebrow">Community Detail</p>
+    <h1><%= post.title %></h1>
+    <div class="post-meta">
+      <span class="tag"><%= post.category %></span>
+      <span class="tag"><%= post.region || "전국" %></span>
+      <span><%= post.author_name %></span>
+      <span><%= formatDate(post.created_at) %></span>
+      <span>조회 <%= formatNumber(post.views_count) %></span>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container content-with-sidebar">
+    <article class="article-card">
+      <% if (message) { %>
+        <div class="alert success" data-auto-dismiss="true"><%= message %></div>
+      <% } %>
+      <% if (error) { %>
+        <div class="alert error"><%= error %></div>
+      <% } %>
+
+      <h2>게시글 본문</h2>
+      <div class="article-content">
+        <%- post.content.replace(/\n/g, "<br />") %>
+      </div>
+
+      <div class="ad-slot">
+        <span>Post Detail AdSense Placeholder</span>
+        <small>본문 중간 광고 영역</small>
+      </div>
+
+      <section id="comments" class="comments-section">
+        <div class="section-heading">
+          <div>
+            <h2>댓글 <%= formatNumber(post.comments.length) %>개</h2>
+            <p>질문과 답변이 쌓일수록 커뮤니티 페이지 품질도 함께 올라갑니다.</p>
+          </div>
+        </div>
+
+        <div class="comment-list">
+          <% if (post.comments.length > 0) { %>
+            <% post.comments.forEach((comment) => { %>
+              <article class="comment-item">
+                <div class="post-meta">
+                  <span><strong><%= comment.author_name %></strong></span>
+                  <span><%= formatDate(comment.created_at) %></span>
+                </div>
+                <p><%= comment.content %></p>
+              </article>
+            <% }) %>
+          <% } else { %>
+            <article class="comment-item">
+              <p>아직 댓글이 없습니다. 첫 댓글을 남겨 보세요.</p>
+            </article>
+          <% } %>
+        </div>
+
+        <form
+          method="POST"
+          action="/community/<%= post.id %>/comments"
+          class="stack-form comment-form"
+        >
+          <label>
+            닉네임
+            <input type="text" name="authorName" placeholder="예: 실거주준비중" required />
+          </label>
+          <label>
+            댓글 내용
+            <textarea
+              name="content"
+              rows="5"
+              placeholder="의견이나 질문을 남겨 주세요."
+              required
+            ></textarea>
+          </label>
+          <button class="button button-primary" type="submit">댓글 등록</button>
+        </form>
+      </section>
+    </article>
+
+    <aside class="sticky-panel">
+      <div class="seo-panel">
+        <h2>관련 이동</h2>
+        <ul class="feature-list">
+          <li><a href="/community">커뮤니티 목록으로 돌아가기</a></li>
+          <li><a href="/calc">계산기로 비용 확인하기</a></li>
+          <li><a href="/exam">공인중개사 시험 정보 보기</a></li>
+        </ul>
+      </div>
+
+      <div class="ad-slot">
+        <span>Sidebar AdSense Placeholder</span>
+        <small>상세 페이지 사이드 광고 영역</small>
+      </div>
+    </aside>
+  </div>
+</section>

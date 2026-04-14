@@ -1,0 +1,86 @@
+<% if (pageMode === 'not-found') { %>
+  <section class="page-hero compact-hero">
+    <div class="container">
+      <p class="eyebrow">404</p>
+      <h1>요청한 페이지를 찾을 수 없습니다.</h1>
+      <p>메뉴를 통해 계산기, 커뮤니티, 시험 정보 페이지로 다시 이동해 주세요.</p>
+      <a class="button button-primary" href="/">홈으로 이동</a>
+    </div>
+  </section>
+<% } else { %>
+  <section class="page-hero compact-hero">
+    <div class="container">
+      <p class="eyebrow">Exam SEO Section</p>
+      <h1>공인중개사 시험 정보</h1>
+      <p>
+        공인중개사 시험은 장기적으로 꾸준한 검색 유입을 만들기 좋은 부동산 대표
+        SEO 주제입니다.
+      </p>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <div class="container">
+      <div class="card-grid two-columns">
+        <% examCategories.forEach((category) => { %>
+          <article class="info-card">
+            <h2><%= category.title %></h2>
+            <p><%= category.description %></p>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section alt-section">
+    <div class="container">
+      <h2>3개월 학습 로드맵</h2>
+      <div class="timeline">
+        <% studyPlan.forEach((step) => { %>
+          <div class="timeline-item">
+            <span class="timeline-dot"></span>
+            <p><%= step %></p>
+          </div>
+        <% }) %>
+      </div>
+      <div class="ad-slot">
+        <span>Exam Content AdSense Placeholder</span>
+        <small>시험 정보 콘텐츠 중간 광고 영역</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <div class="container">
+      <h2>자주 묻는 질문</h2>
+      <div class="faq-list">
+        <% faqItems.forEach((item) => { %>
+          <article class="faq-item">
+            <h3><%= item.question %></h3>
+            <p><%= item.answer %></p>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section alt-section">
+    <div class="container">
+      <h2>SEO 확장 아이디어</h2>
+      <div class="card-grid three-columns">
+        <article class="content-card">
+          <h3>과목별 요약 노트</h3>
+          <p>민법 요약, 공법 암기법, 세법 핵심 숫자 같은 롱테일 키워드 확장용 주제입니다.</p>
+        </article>
+        <article class="content-card">
+          <h3>기출문제 분석 콘텐츠</h3>
+          <p>최신 기출 경향과 난이도 분석은 반복 방문을 만드는 대표적인 시험형 콘텐츠입니다.</p>
+        </article>
+        <article class="content-card">
+          <h3>합격 후기 인터뷰</h3>
+          <p>후기형 콘텐츠는 신뢰도를 높이고 검색 결과에서 클릭률을 끌어올리기 좋습니다.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+<% } %>

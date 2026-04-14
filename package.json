@@ -1,0 +1,15 @@
+{
+  "name": "realestate-platform",
+  "version": "1.0.0",
+  "description": "Simple real estate platform focused on SEO traffic, community engagement, and AdSense monetization.",
+  "main": "server/app.js",
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "node server/app.js"
+  },
+  "dependencies": {
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "mysql2": "^3.22.0"
+  }
+}

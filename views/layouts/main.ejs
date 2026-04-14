@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <meta name="description" content="<%= metaDescription %>" />
+    <meta
+      name="keywords"
+      content="<%= metaKeywords || '부동산 계산기, 부동산 커뮤니티, 공인중개사 시험' %>"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="<%= pageTitle %>" />
+    <meta property="og:description" content="<%= metaDescription %>" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="<%= canonicalUrl || `${baseUrl}${currentPath}` %>" />
+    <link rel="canonical" href="<%= canonicalUrl || `${baseUrl}${currentPath}` %>" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script defer src="/js/regionData.js"></script>
+    <script defer src="/js/main.js"></script>
+    <% if (includeCalculatorsScript) { %>
+      <script defer src="/js/calculators.js"></script>
+    <% } %>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="/">
+          <span class="brand-badge">RE</span>
+          <span>
+            <strong>Real Estate Hub</strong>
+            <small>Traffic + Community + SEO</small>
+          </span>
+        </a>
+
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="/" class="<%= currentPath === '/' ? 'is-active' : '' %>">홈</a>
+          <a
+            href="/calc"
+            class="<%= currentPath.startsWith('/calc') ? 'is-active' : '' %>"
+          >
+            계산기
+          </a>
+          <a
+            href="/community"
+            class="<%= currentPath.startsWith('/community') ? 'is-active' : '' %>"
+          >
+            커뮤니티
+          </a>
+          <a
+            href="/exam"
+            class="<%= currentPath.startsWith('/exam') ? 'is-active' : '' %>"
+          >
+            시험 정보
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <%- include(bodyView) %>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <h2>Real Estate Hub</h2>
+          <p>
+            부동산 계산기, 커뮤니티, 공인중개사 시험 정보를 중심으로 검색 유입과
+            재방문을 만드는 수익형 플랫폼입니다.
+          </p>
+        </div>
+        <div>
+          <h2>핵심 카테고리</h2>
+          <ul>
+            <li><a href="/calc">부동산 계산기</a></li>
+            <li><a href="/community">부동산 커뮤니티</a></li>
+            <li><a href="/exam">공인중개사 시험 정보</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>AdSense 준비 영역</h2>
+          <div class="ad-slot ad-slot-footer">
+            <span>Footer AdSense Placeholder</span>
+            <small>실제 승인 후 광고 코드를 삽입하세요.</small>
+          </div>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <p>&copy; <%= currentYear %> Real Estate Hub. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>

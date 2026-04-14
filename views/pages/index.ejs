@@ -1,0 +1,212 @@
+<%
+  const safePolicyCards =
+    typeof policyCards !== "undefined" ? policyCards : [];
+  const safeAllPosts =
+    typeof allPosts !== "undefined" ? allPosts : [];
+  const safeLatestPosts =
+    typeof latestPosts !== "undefined" ? latestPosts : [];
+%>
+
+<section class="hero-section">
+  <div class="container hero-grid home-hero-grid">
+    <div>
+      <h1>전세 사기 당하기 전에 꼭 확인하세요</h1>
+      <p class="hero-copy">복비 계산, 지역 정보, 최신 정책까지 한 번에 확인</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="/community" data-region-action="risk-check">
+          전세 사기 조회하기
+        </a>
+        <a class="button button-secondary" href="/calc" data-region-action="calc">
+          복비 계산기 바로가기
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-card region-card" id="region-system">
+      <h2>지역별 빠른 확인</h2>
+      <p>지역을 선택하고 바로 커뮤니티와 계산기로 이동해 보세요.</p>
+
+      <div class="region-form-grid">
+        <label>
+          시/도
+          <select id="province-select" name="province">
+            <option value="전체" selected>전체</option>
+          </select>
+        </label>
+
+        <label>
+          시/군/구
+          <select id="district-select" name="district">
+            <option value="전체" selected>시/군/구 전체</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="region-status" id="region-status">
+        <strong>전체 지역</strong> 기준으로 최근 정보와 커뮤니티 글을 확인할 수 있습니다.
+      </div>
+
+      <div class="quick-link-grid">
+        <a class="quick-link-card" href="/community" data-region-action="risk-check">
+          <strong>전세 사기 체크</strong>
+          <span>계약 전 확인 포인트 보기</span>
+        </a>
+        <a class="quick-link-card" href="/community" data-region-action="community">
+          <strong>지역 게시글 보기</strong>
+          <span>실거주 후기와 질문 확인</span>
+        </a>
+        <a class="quick-link-card" href="/calc" data-region-action="calc">
+          <strong>복비 바로 계산</strong>
+          <span>예상 비용 빠르게 확인</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <div class="ad-slot ad-slot-hero">
+      <span>Homepage Hero Ad Placeholder</span>
+      <small>HERO 아래 광고 영역</small>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <h2>바로가기</h2>
+        <p>텍스트보다 바로 눌러볼 수 있는 기능 중심으로 구성했습니다.</p>
+      </div>
+    </div>
+
+    <div class="card-grid three-columns">
+      <article class="info-card action-card">
+        <h3>복비 계산기</h3>
+        <p>매매와 전세 계약 전에 예상 중개보수를 빠르게 확인해 보세요.</p>
+        <a class="button button-primary button-block" href="/calc">계산 시작하기</a>
+      </article>
+      <article class="info-card action-card">
+        <h3>지역 정보</h3>
+        <p>서울, 경기, 부산, 전국 단위로 지역 흐름을 먼저 살펴보세요.</p>
+        <a class="button button-secondary button-block" href="#region-system">지역 선택하기</a>
+      </article>
+      <article class="info-card action-card">
+        <h3>커뮤니티 피드</h3>
+        <p>실거주 후기와 질문을 보고 계약 전 체크 포인트를 빠르게 확인하세요.</p>
+        <a class="button button-secondary button-block" href="/community">최신 글 보기</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="content-section alt-section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <h2>최신 부동산 정책</h2>
+        <p>지금 확인해야 할 핵심 정책만 짧게 보고 바로 이동할 수 있습니다.</p>
+      </div>
+    </div>
+
+    <div class="card-grid policy-grid">
+      <% safePolicyCards.forEach((policy, index) => { %>
+        <article class="content-card policy-card">
+          <h3><%= policy.title %></h3>
+          <p><%= policy.description %></p>
+          <p class="policy-summary"><%= policy.summary %></p>
+          <a class="button button-secondary button-block" href="<%= policy.buttonLink %>">
+            <%= policy.buttonText %>
+          </a>
+        </article>
+
+        <% if (index === 2) { %>
+          <div class="ad-slot inline-policy-ad">
+            <span>Policy Section Ad Placeholder</span>
+            <small>정책 섹션 내부 광고 영역</small>
+          </div>
+        <% } %>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <h2>최근 올라온 글</h2>
+        <p id="homepage-post-region-label">선택한 지역 기준 최신 글 5개를 바로 확인할 수 있습니다.</p>
+      </div>
+      <a class="button button-secondary" href="/community" data-region-action="community">
+        전체 글 보기
+      </a>
+    </div>
+
+    <div class="post-list" id="homepage-post-feed">
+      <% if (safeLatestPosts.length > 0) { %>
+        <% safeLatestPosts.forEach((post) => { %>
+          <article class="post-item post-item-compact">
+            <div class="post-meta">
+              <span class="tag"><%= post.region || "전국" %></span>
+              <span><%= post.category %></span>
+              <span><%= formatDate(post.created_at) %></span>
+            </div>
+            <h3>
+              <a href="/community/<%= post.id %>"><%= post.title %></a>
+            </h3>
+            <p><%= post.excerpt %></p>
+            <a class="button button-secondary" href="/community/<%= post.id %>">
+              지금 읽기
+            </a>
+          </article>
+        <% }) %>
+      <% } else { %>
+        <article class="post-item">
+          <h3>아직 등록된 글이 없습니다.</h3>
+          <p>첫 번째 지역 글을 등록해 보세요.</p>
+        </article>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<section class="content-section alt-section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <h2>계산기 바로가기</h2>
+        <p>복비, 대출 이자, 월세와 매매 비교를 바로 계산해 볼 수 있습니다.</p>
+      </div>
+    </div>
+
+    <div class="card-grid three-columns">
+      <article class="info-card action-card">
+        <h3>부동산 중개보수</h3>
+        <p>거래 금액과 요율만 넣으면 바로 예상 비용을 확인할 수 있습니다.</p>
+        <a class="button button-primary button-block" href="/calc#fee-calculator">복비 계산</a>
+      </article>
+      <article class="info-card action-card">
+        <h3>대출 이자</h3>
+        <p>월 납입액과 총이자를 바로 비교해 예산을 체크해 보세요.</p>
+        <a class="button button-secondary button-block" href="/calc#loan-calculator">이자 계산</a>
+      </article>
+      <article class="info-card action-card">
+        <h3>월세 vs 매매</h3>
+        <p>현재 거주 계획에 맞춰 어떤 선택이 유리한지 빠르게 비교할 수 있습니다.</p>
+        <a class="button button-secondary button-block" href="/calc#rent-buy-calculator">비교 시작</a>
+      </article>
+    </div>
+
+    <div class="ad-slot">
+      <span>Calculator Section Ad Placeholder</span>
+      <small>계산기 섹션 아래 광고 영역</small>
+    </div>
+  </div>
+</section>
+
+<script>
+  window.homePosts = <%- JSON.stringify(safeAllPosts) %>;
+</script>
