@@ -48,7 +48,11 @@ const publicDir = path.join(__dirname, "..", "public");
 app.get("/community", (req, res) => {
   res.sendFile(path.join(publicDir, "community.html"));
 });
-app.get("/community/:id(\\d+)", (req, res) => {
+app.get("/community/:id", (req, res, next) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id) || String(id) !== req.params.id) {
+    return next();
+  }
   res.sendFile(path.join(publicDir, "post.html"));
 });
 
