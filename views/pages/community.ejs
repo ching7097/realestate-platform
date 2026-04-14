@@ -1,95 +1,143 @@
-<section class="page-hero compact-hero">
-  <div class="container">
-    <p class="eyebrow">Community</p>
-    <h1>부동산 커뮤니티</h1>
-    <p>
-      매매, 전세, 정책, 실거주 지역 정보까지 자유롭게 의견을 나누는
-      공간입니다.
-    </p>
-    <div class="chip-list">
-      <% communityHighlights.forEach((item) => { %>
-        <span class="chip"><%= item %></span>
-      <% }) %>
-    </div>
-  </div>
-</section>
-
-<section class="content-section">
-  <div class="container two-column-layout">
-    <div>
-      <% if (message) { %>
-        <div class="alert success" data-auto-dismiss="true"><%= message %></div>
-      <% } %>
-      <% if (error) { %>
-        <div class="alert error"><%= error %></div>
-      <% } %>
-
-      <div class="section-heading">
-        <div>
-          <h2>최신 게시글</h2>
-          <p><strong><%= selectedRegionLabel %></strong> 기준으로 동적으로 게시글을 보여줍니다.</p>
-        </div>
-        <a class="button button-primary" href="/community/write">글쓰기</a>
+<section class="community-plaza content-section">
+  <% const safeDisplaySlug = (typeof displayBoardSlug !== "undefined" && displayBoardSlug) ? displayBoardSlug : ((typeof activeBoardSlug !== "undefined" && activeBoardSlug) ? activeBoardSlug : "free"); %>
+  <% const safeDisplayLabel = (typeof displayBoardLabel !== "undefined" && displayBoardLabel) ? displayBoardLabel : ((typeof activeBoardLabel !== "undefined" && activeBoardLabel) ? activeBoardLabel : "자유게시판"); %>
+  <% const safeSlug = (safeDisplaySlug || "") || "free"; %>
+  <div class="container community-plaza-inner">
+    <% if (typeof message !== "undefined" && message) { %>
+      <div class="community-plaza-alerts">
+        <div class="alert success" data-auto-dismiss="true"><%= (message || "") %></div>
       </div>
-
-      <div class="ad-slot">
-        <span>Community List AdSense Placeholder</span>
-        <small>커뮤니티 리스트 상단 광고 영역</small>
+    <% } %>
+    <% if (typeof error !== "undefined" && error) { %>
+      <div class="community-plaza-alerts">
+        <div class="alert error"><%= (error || "") %></div>
       </div>
+    <% } %>
 
-      <div class="post-list">
-        <% if (posts && posts.length > 0) { %>
-          <% posts.forEach((post, index) => { %>
-            <article class="post-item">
-              <div class="post-meta">
-                <span class="tag"><%= post.category %></span>
-                <span class="tag"><%= post.region || "전국" %></span>
-                <span><%= formatDate(post.created_at) %></span>
-                <span>댓글 <%= formatNumber(post.comment_count) %></span>
-                <span>조회 <%= formatNumber(post.views_count) %></span>
-              </div>
-              <h3>
-                <a href="/community/<%= post.id %>"><%= post.title %></a>
-              </h3>
-              <p><%= post.excerpt %></p>
-              <a class="text-link" href="/community/<%= post.id %>">
-                자세히 보기
-              </a>
-            </article>
-
-            <% if (index === 1) { %>
-              <div class="ad-slot inline-ad">
-                <span>Inline Feed AdSense Placeholder</span>
-                <small>커뮤니티 피드 중간 광고 영역</small>
-              </div>
-            <% } %>
+    <aside class="community-plaza-sidebar community-plaza-sidebar--left" aria-label="게시판 카테고리">
+      <div class="community-panel">
+        <h2 class="community-panel__title">게시판</h2>
+        <p class="community-panel__hint">자유 · 질문 · 정보 · 후기</p>
+        <nav class="community-board-nav">
+          <% (communityBoards || []).forEach((b) => { %>
+            <% const bs = (b && b.slug) ? b.slug : "free"; %>
+            <% const bl = (b && b.label) ? b.label : "게시판"; %>
+            <a
+              class="community-board-nav__link <%= (safeSlug || "") === (bs || "") ? "is-active" : "" %>"
+              href="/community?board=<%= encodeURIComponent((bs || "") || "free") %>"
+            ><%= (bl || "") %></a>
           <% }) %>
-        <% } else { %>
-          <article class="post-item">
-            <h3>아직 커뮤니티 글이 없습니다.</h3>
-            <p>첫 게시글을 남겨 커뮤니티를 시작해 보세요.</p>
-          </article>
-        <% } %>
+        </nav>
       </div>
-    </div>
+    </aside>
 
-    <aside class="sticky-panel">
-      <div class="form-card">
-        <h2>글 작성하기</h2>
-        <p>새 글을 작성하려면 전용 작성 페이지로 이동하세요.</p>
-        <a class="button button-primary button-block" href="/community/write">
-          글쓰기 페이지 열기
-        </a>
+    <main class="community-plaza-main">
+      <header class="community-main-head">
+        <div>
+          <h1 class="community-main-head__title"><%= (safeDisplayLabel || "") || "자유게시판" %></h1>
+          <p class="community-main-head__sub">제목 · 조회수 · 등록일 · HOT/NEW</p>
+        </div>
+        <a class="button button-primary community-main-head__write" href="/community/write">글쓰기</a>
+      </header>
+
+      <div class="community-panel community-panel--flush">
+        <div class="community-table-wrap">
+          <table class="community-post-table">
+            <thead>
+              <tr>
+                <th class="col-badges" scope="col">상태</th>
+                <th scope="col">제목</th>
+                <th class="col-date" scope="col">등록일</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% const rows = posts || []; %>
+              <% if (!rows.length) { %>
+                <tr>
+                  <td class="community-post-table__empty" colspan="3">등록된 글이 없습니다.</td>
+                </tr>
+              <% } %>
+              <% rows.forEach((post) => { %>
+                <% const pid = post && post.id != null ? String(post.id) : ""; %>
+                <% const ptitle = post && post.title != null ? String(post.title) : ""; %>
+                <% const rawDate = post && post.created_at ? new Date(post.created_at) : null; %>
+                <% const dateOk = rawDate && !Number.isNaN(rawDate.getTime()); %>
+                <% const dateStr = dateOk ? rawDate.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }) : "-"; %>
+                <tr
+                  class="community-post-row"
+                  data-post-row-href="/community/<%= (pid || "") %>"
+                  tabindex="0"
+                  role="link"
+                  aria-label="게시글 상세 보기"
+                >
+                  <td class="col-badges">
+                    <span class="community-badges">
+                      <% if (post && post.isHot) { %><span class="badge badge-hot">HOT</span><% } %>
+                      <% if (post && post.isNew) { %><span class="badge badge-new">NEW</span><% } %>
+                    </span>
+                  </td>
+                  <td class="community-post-titlecell">
+                    <div class="community-post-titlewrap">
+                      <a class="community-post-title" href="/community/<%= (pid || "") %>"><%= (ptitle || "") %></a>
+                      <span class="community-post-views-inline" title="조회수">조회 <%= (Number(post && post.views != null ? post.views : 0).toLocaleString("ko-KR") || "") %></span>
+                    </div>
+                  </td>
+                  <td class="col-date">
+                    <%= (dateStr || "") %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <aside class="community-plaza-sidebar community-plaza-sidebar--right" aria-label="인기·최신 글">
+      <div class="community-panel community-panel--section">
+        <h2 class="community-panel__title">인기글</h2>
+        <p class="community-panel__hint">최근 7일 · 조회수 순</p>
+        <ol class="community-side-list community-side-list--with-views">
+          <% (popularWeek || []).forEach((p, i) => { %>
+            <% const sid = p && p.id != null ? String(p.id) : ""; %>
+            <% const st = p && p.title != null ? String(p.title) : ""; %>
+            <li>
+              <span class="community-side-list__rank"><%= String((i + 1) || "") %></span>
+              <a class="community-side-list__link" href="/community/<%= (sid || "") %>"><%= (st || "") %></a>
+              <span class="community-side-list__views">조회 <%= (Number(p && p.views != null ? p.views : 0).toLocaleString("ko-KR") || "") %></span>
+            </li>
+          <% }) %>
+        </ol>
       </div>
 
-      <div class="seo-panel">
-        <h2>SEO 운영 팁</h2>
-        <ul class="feature-list">
-          <li>실거주 후기형 제목 사용</li>
-          <li>지역명 + 거래유형 키워드 포함</li>
-          <li>댓글 유도로 페이지 갱신 빈도 증가</li>
-          <li>커뮤니티 글을 콘텐츠 페이지로 재활용</li>
+      <div class="community-panel community-panel--section">
+        <h2 class="community-panel__title">최신글</h2>
+        <ul class="community-side-list community-side-list--plain community-side-list--with-views">
+          <% (recentGlobal || []).forEach((p) => { %>
+            <% const rid = p && p.id != null ? String(p.id) : ""; %>
+            <% const rt = p && p.title != null ? String(p.title) : ""; %>
+            <li>
+              <a class="community-side-list__link" href="/community/<%= (rid || "") %>"><%= (rt || "") %></a>
+              <span class="community-side-list__views">조회 <%= (Number(p && p.views != null ? p.views : 0).toLocaleString("ko-KR") || "") %></span>
+            </li>
+          <% }) %>
         </ul>
+      </div>
+
+      <div class="community-panel community-panel--section ad-slot ad-slot-community-rail" aria-label="조회수 상위">
+        <h2 class="community-panel__title">조회 TOP</h2>
+        <p class="community-panel__hint">전체 기간 · 조회수 순</p>
+        <ol class="community-side-list community-side-list--with-views">
+          <% (topViewedAll || []).forEach((p, i) => { %>
+            <% const tid = p && p.id != null ? String(p.id) : ""; %>
+            <% const tt = p && p.title != null ? String(p.title) : ""; %>
+            <li>
+              <span class="community-side-list__rank"><%= String((i + 1) || "") %></span>
+              <a class="community-side-list__link" href="/community/<%= (tid || "") %>"><%= (tt || "") %></a>
+              <span class="community-side-list__views">조회 <%= (Number(p && p.views != null ? p.views : 0).toLocaleString("ko-KR") || "") %></span>
+            </li>
+          <% }) %>
+        </ol>
       </div>
     </aside>
   </div>

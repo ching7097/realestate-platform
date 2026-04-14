@@ -66,6 +66,28 @@
 
 <section class="content-section">
   <div class="container">
+    <div class="card-grid three-columns">
+      <article class="info-card action-card">
+        <h3>전세 사기 예방 가이드</h3>
+        <p>등기부·보증금·보험까지 한 번에 훑는 SEO 페이지입니다.</p>
+        <a class="button button-primary button-block" href="/guide#jeonse-scam">가이드 읽기</a>
+      </article>
+      <article class="info-card action-card">
+        <h3>위험도 간이 체크</h3>
+        <p>보증금·대출·집값으로 참고용 등급을 확인해 보세요.</p>
+        <a class="button button-secondary button-block" href="/check">지금 체크</a>
+      </article>
+      <article class="info-card action-card">
+        <h3>자유게시판</h3>
+        <p>지역 후기와 질문을 남기고 유입을 늘리세요.</p>
+        <a class="button button-secondary button-block" href="/community">게시판 이동</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
     <div class="ad-slot ad-slot-hero">
       <span>Homepage Hero Ad Placeholder</span>
       <small>HERO 아래 광고 영역</small>
@@ -94,9 +116,10 @@
         <a class="button button-secondary button-block" href="#region-system">지역 선택하기</a>
       </article>
       <article class="info-card action-card">
-        <h3>커뮤니티 피드</h3>
-        <p>실거주 후기와 질문을 보고 계약 전 체크 포인트를 빠르게 확인하세요.</p>
-        <a class="button button-secondary button-block" href="/community">최신 글 보기</a>
+        <h3>자유게시판</h3>
+        <p>실거주 후기와 질문을 보고, 직접 글을 남길 수 있습니다.</p>
+        <a class="button button-primary button-block" href="/community/write">글쓰기</a>
+        <a class="button button-secondary button-block" href="/community" style="margin-top: 10px;">게시글 보기</a>
       </article>
     </div>
   </div>
@@ -140,9 +163,12 @@
         <h2>최근 올라온 글</h2>
         <p id="homepage-post-region-label">선택한 지역 기준 최신 글 5개를 바로 확인할 수 있습니다.</p>
       </div>
-      <a class="button button-secondary" href="/community" data-region-action="community">
-        전체 글 보기
-      </a>
+      <div class="section-heading-actions">
+        <a class="button button-primary" href="/community/write">글쓰기</a>
+        <a class="button button-secondary" href="/community" data-region-action="community">
+          자유게시판
+        </a>
+      </div>
     </div>
 
     <div class="post-list" id="homepage-post-feed">
@@ -166,7 +192,11 @@
       <% } else { %>
         <article class="post-item">
           <h3>아직 등록된 글이 없습니다.</h3>
-          <p>첫 번째 지역 글을 등록해 보세요.</p>
+          <p>자유게시판에서 글을 남기거나, 다른 지역을 선택해 보세요.</p>
+          <div class="section-heading-actions" style="margin-top: 12px; justify-content: flex-start;">
+            <a class="button button-secondary" href="/community">자유게시판</a>
+            <a class="button button-primary" href="/community/write">글쓰기</a>
+          </div>
         </article>
       <% } %>
     </div>

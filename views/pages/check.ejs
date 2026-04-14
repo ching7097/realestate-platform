@@ -1,0 +1,55 @@
+<section class="page-hero compact-hero">
+  <div class="container">
+    <p class="eyebrow">Risk Check</p>
+    <h1>전세·매매 위험도 간이 체크</h1>
+    <p>보증금·대출·집값을 넣으면 참고용 위험 등급(낮음/보통/높음)을 보여 줍니다. 법률 자문이 아닙니다.</p>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container content-with-sidebar">
+    <article class="form-card">
+      <form method="POST" action="/check" class="stack-form">
+        <label>
+          보증금 / 납부 예정 보증금(원)
+          <input type="number" name="deposit" min="0" value="<%= form.deposit %>" placeholder="예: 200000000" />
+        </label>
+        <label>
+          대출 원금(원)
+          <input type="number" name="loan" min="0" value="<%= form.loan %>" placeholder="예: 150000000" />
+        </label>
+        <label>
+          집값·매매가(원)
+          <input type="number" name="housePrice" min="0" value="<%= form.housePrice %>" placeholder="예: 600000000" required />
+        </label>
+        <button class="button button-primary" type="submit">위험도 계산</button>
+      </form>
+
+      <% if (checkResult) { %>
+        <div class="result-box" style="margin-top: 20px;">
+          <% if (checkResult.level === "invalid") { %>
+            <p class="alert error"><%= checkResult.detail %></p>
+          <% } else { %>
+            <p><strong>등급:</strong> <%= checkResult.label %> (<%= checkResult.level %>)</p>
+            <p><%= checkResult.detail %></p>
+          <% } %>
+        </div>
+      <% } %>
+    </article>
+
+    <aside class="sticky-panel">
+      <div class="seo-panel">
+        <h2>해석 가이드</h2>
+        <ul class="feature-list">
+          <li>LTV(대출/집값)가 높을수록 금융 스트레스가 커집니다.</li>
+          <li>보증금이 집값 대비 너무 낮으면 회수 리스크가 커질 수 있습니다.</li>
+          <li>실제 계약 전에는 등기·보험·대출 조건을 전문가와 확인하세요.</li>
+        </ul>
+      </div>
+      <div class="ad-slot">
+        <span>Check Page AdSense Placeholder</span>
+        <small>위험도 체크 옆 광고 영역</small>
+      </div>
+    </aside>
+  </div>
+</section>

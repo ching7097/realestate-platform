@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
+  <% const safePath = typeof currentPath === "string" ? currentPath : String(currentPath || ""); %>
+  <% const _bodyView = bodyView == null ? "" : String(bodyView); %>
+  <% const bodyInc = _bodyView.startsWith("..") ? _bodyView : "../" + (_bodyView || "pages/index"); %>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,12 +16,12 @@
     <meta property="og:title" content="<%= pageTitle %>" />
     <meta property="og:description" content="<%= metaDescription %>" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="<%= canonicalUrl || `${baseUrl}${currentPath}` %>" />
-    <link rel="canonical" href="<%= canonicalUrl || `${baseUrl}${currentPath}` %>" />
+    <meta property="og:url" content="<%= canonicalUrl || `${baseUrl || ""}${safePath}` %>" />
+    <link rel="canonical" href="<%= canonicalUrl || `${baseUrl || ""}${safePath}` %>" />
     <link rel="stylesheet" href="/css/style.css" />
     <script defer src="/js/regionData.js"></script>
     <script defer src="/js/main.js"></script>
-    <% if (includeCalculatorsScript) { %>
+    <% if (typeof includeCalculatorsScript !== "undefined" && includeCalculatorsScript) { %>
       <script defer src="/js/calculators.js"></script>
     <% } %>
   </head>
@@ -34,22 +37,34 @@
         </a>
 
         <nav class="main-nav" aria-label="주요 메뉴">
-          <a href="/" class="<%= currentPath === '/' ? 'is-active' : '' %>">홈</a>
+          <a href="/" class="<%= safePath === '/' ? 'is-active' : '' %>">홈</a>
+          <a
+            href="/guide"
+            class="<%= safePath.startsWith('/guide') ? 'is-active' : '' %>"
+          >
+            가이드
+          </a>
           <a
             href="/calc"
-            class="<%= currentPath.startsWith('/calc') ? 'is-active' : '' %>"
+            class="<%= safePath.startsWith('/calc') ? 'is-active' : '' %>"
           >
             계산기
           </a>
           <a
-            href="/community"
-            class="<%= currentPath.startsWith('/community') ? 'is-active' : '' %>"
+            href="/check"
+            class="<%= safePath.startsWith('/check') ? 'is-active' : '' %>"
           >
-            커뮤니티
+            위험 체크
+          </a>
+          <a
+            href="/community"
+            class="<%= safePath.startsWith('/community') ? 'is-active' : '' %>"
+          >
+            자유게시판
           </a>
           <a
             href="/exam"
-            class="<%= currentPath.startsWith('/exam') ? 'is-active' : '' %>"
+            class="<%= safePath.startsWith('/exam') ? 'is-active' : '' %>"
           >
             시험 정보
           </a>
@@ -58,7 +73,7 @@
     </header>
 
     <main class="site-main">
-      <%- include(bodyView) %>
+      <%- include(bodyInc) %>
     </main>
 
     <footer class="site-footer">
@@ -73,8 +88,10 @@
         <div>
           <h2>핵심 카테고리</h2>
           <ul>
+            <li><a href="/guide">부동산 가이드</a></li>
             <li><a href="/calc">부동산 계산기</a></li>
-            <li><a href="/community">부동산 커뮤니티</a></li>
+            <li><a href="/check">위험도 체크</a></li>
+            <li><a href="/community">자유게시판</a></li>
             <li><a href="/exam">공인중개사 시험 정보</a></li>
           </ul>
         </div>
@@ -87,7 +104,7 @@
         </div>
       </div>
       <div class="container footer-bottom">
-        <p>&copy; <%= currentYear %> Real Estate Hub. All rights reserved.</p>
+        <p>&copy; <%= typeof currentYear !== "undefined" && currentYear != null ? currentYear : new Date().getFullYear() %> Real Estate Hub. All rights reserved.</p>
       </div>
     </footer>
   </body>

@@ -3,18 +3,19 @@ const path = require("path");
 
 const apiRoutes = require("./routes/api");
 const indexRoutes = require("./routes/index");
+const guideRoutes = require("./routes/guide");
+const checkRoutes = require("./routes/check");
 const communityRoutes = require("./routes/community");
 const calcRoutes = require("./routes/calc");
 const examRoutes = require("./routes/exam");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "..", "views"));
 
 app.locals.siteName = "Real Estate Hub";
-app.locals.baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+app.locals.baseUrl = process.env.BASE_URL || "http://localhost:3000";
 app.locals.formatNumber = (value) =>
   new Intl.NumberFormat("ko-KR").format(Number(value) || 0);
 app.locals.formatDate = (value) => {
@@ -43,19 +44,8 @@ app.use((req, res, next) => {
 
 app.use("/api", apiRoutes);
 app.use("/", indexRoutes);
-
-const publicDir = path.join(__dirname, "..", "public");
-app.get("/community", (req, res) => {
-  res.sendFile(path.join(publicDir, "community.html"));
-});
-app.get("/community/:id", (req, res, next) => {
-  const id = parseInt(req.params.id, 10);
-  if (Number.isNaN(id) || String(id) !== req.params.id) {
-    return next();
-  }
-  res.sendFile(path.join(publicDir, "post.html"));
-});
-
+app.use("/guide", guideRoutes);
+app.use("/check", checkRoutes);
 app.use("/community", communityRoutes);
 app.use("/calc", calcRoutes);
 app.use("/exam", examRoutes);
@@ -76,23 +66,51 @@ app.use((req, res) => {
   });
 });
 
-app.use((error, req, res, next) => {
-  console.error(error);
+function errorMessageFromUnknown(err) {
+  if (err == null) {
+    return "Server Error";
+  }
+  if (typeof err === "string") {
+    return err;
+  }
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  if (typeof err === "object" && typeof err.message === "string" && err.message) {
+    return err.message;
+  }
+  try {
+    return String(err);
+  } catch {
+    return "Server Error";
+  }
+}
 
-  res.status(500).render("layouts/main", {
-    pageTitle: "서버 오류 | Real Estate Hub",
-    metaDescription: "일시적인 서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-    metaKeywords: "부동산 플랫폼, 서버 오류",
-    canonicalUrl: `${app.locals.baseUrl}${req.originalUrl}`,
-    includeCalculatorsScript: false,
-    bodyView: "../pages/index",
-    allPosts: [],
-    latestPosts: [],
-    policyCards: [],
-    pageMode: "error"
+app.use((err, req, res, next) => {
+  const stack = err instanceof Error ? err.stack : "";
+  console.error("GLOBAL ERROR:", err);
+  if (stack) {
+    console.error(stack);
+  }
+
+  if (res.headersSent) {
+    return;
+  }
+
+  const msg = errorMessageFromUnknown(err);
+  const isDev = req.app.get("env") === "development";
+  res.status(500).type("text/plain; charset=utf-8").send(isDev && stack ? `${msg}\n\n${stack}` : msg);
+});
+
+app
+  .listen(3000, "0.0.0.0", () => {
+    console.log("Real Estate Hub server is running at http://localhost:3000");
+  })
+  .on("error", (listenErr) => {
+    if (listenErr && listenErr.code === "EADDRINUSE") {
+      console.error("Port 3000 is already in use. Stop the other Node process using that port, then restart.");
+    }
+    console.error(listenErr);
   });
-});
 
-app.listen(PORT, () => {
-  console.log(`Real Estate Hub server is running on port ${PORT}`);
-});
+module.exports = app;

@@ -92,7 +92,11 @@ document.addEventListener("DOMContentLoaded", () => {
         homepagePostFeed.innerHTML = `
           <article class="post-item">
             <h3>선택한 지역 게시글이 아직 없습니다.</h3>
-            <p>다른 지역을 선택하거나 커뮤니티에서 첫 글을 작성해 보세요.</p>
+            <p>다른 지역을 선택하거나 자유게시판에서 첫 글을 작성해 보세요.</p>
+            <div class="section-heading-actions" style="margin-top: 12px; justify-content: flex-start;">
+              <a class="button button-secondary" href="/community">자유게시판</a>
+              <a class="button button-primary" href="/community/write">글쓰기</a>
+            </div>
           </article>
         `;
         return;
@@ -302,4 +306,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadRegions();
   }
+
+  document.querySelectorAll("[data-post-row-href]").forEach((row) => {
+    const go = () => {
+      const href = row.getAttribute("data-post-row-href");
+      if (href) {
+        window.location.assign(href);
+      }
+    };
+
+    row.addEventListener("click", (e) => {
+      if (e.target.closest("a, button")) {
+        return;
+      }
+      go();
+    });
+
+    row.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") {
+        return;
+      }
+      if (e.target.closest("a, button") && e.target !== row) {
+        return;
+      }
+      e.preventDefault();
+      go();
+    });
+  });
 });

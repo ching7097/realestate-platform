@@ -282,6 +282,7 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- posts: 핵심 컬럼 id, title, content, region, district, created_at, 조회수(views_count, 앱에서 views 별칭)
 CREATE TABLE IF NOT EXISTS posts (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
@@ -291,13 +292,17 @@ CREATE TABLE IF NOT EXISTS posts (
   content TEXT NOT NULL,
   category VARCHAR(30) NOT NULL DEFAULT '매매',
   region VARCHAR(60) NOT NULL DEFAULT '전국',
-  views_count INT NOT NULL DEFAULT 0,
+  district VARCHAR(60) NOT NULL DEFAULT '',
+  board VARCHAR(40) NOT NULL DEFAULT '자유게시판',
+  views_count INT NOT NULL DEFAULT 0 COMMENT '조회수',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_posts_user
     FOREIGN KEY (user_id) REFERENCES users(id)
     ON DELETE CASCADE,
   INDEX idx_posts_category (category),
   INDEX idx_posts_region (region),
+  INDEX idx_posts_board (board),
+  INDEX idx_posts_views_created (views_count, created_at),
   INDEX idx_posts_created_at (created_at)
 );
 

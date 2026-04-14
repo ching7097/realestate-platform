@@ -10,7 +10,7 @@ const policyCards = [
       "전세 계약 전에 확인해야 할 권리관계와 보증금 보호 절차가 더 중요해졌습니다.",
     summary: "등기부, 선순위 채권, 보증보험 가능 여부까지 한 번에 체크할 수 있는 핵심 포인트입니다.",
     buttonText: "핵심 체크 보기",
-    buttonLink: "/community"
+    buttonLink: "/guide#jeonse-scam"
   },
   {
     title: "청년 전월세 지원 확대, 보증금 대출과 월세 지원 함께 비교해야",

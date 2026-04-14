@@ -1,70 +1,40 @@
-<section class="page-hero compact-hero">
-  <div class="container">
-    <p class="eyebrow">Community Write</p>
-    <h1>커뮤니티 글쓰기</h1>
-    <p>지역 정보를 포함한 실거주 후기나 질문을 간단하게 등록해 보세요.</p>
-  </div>
-</section>
-
 <section class="content-section">
-  <div class="container content-with-sidebar">
-    <article class="form-card">
-      <% if (error) { %>
-        <div class="alert error"><%= error %></div>
-      <% } %>
-
-      <h2>새 게시글 작성</h2>
-      <form method="POST" action="/community/write" class="stack-form">
-        <label>
-          제목
-          <input
-            type="text"
-            name="title"
-            value="<%= formData.title %>"
-            placeholder="예: 서울 전세 계약 전에 꼭 확인할 것"
-            required
-          />
-        </label>
-
-        <label>
-          지역
-          <select name="region">
-            <% communityRegions.forEach((region) => { %>
-              <option value="<%= region %>" <%= formData.region === region ? "selected" : "" %>>
-                <%= region %>
-              </option>
-            <% }) %>
-          </select>
-        </label>
-
-        <label>
-          내용
-          <textarea
-            name="content"
-            rows="12"
-            placeholder="경험, 질문, 확인한 정보 등을 자유롭게 작성해 주세요."
-            required
-          ><%= formData.content %></textarea>
-        </label>
-
-        <button class="button button-primary" type="submit">등록하기</button>
-      </form>
-    </article>
-
-    <aside class="sticky-panel">
-      <div class="seo-panel">
-        <h2>작성 팁</h2>
-        <ul class="feature-list">
-          <li>제목에 지역명을 넣으면 가독성이 좋아집니다.</li>
-          <li>실제로 확인한 정보 위주로 적으면 반응이 좋습니다.</li>
-          <li>전세, 매매, 정책 관련 경험을 구체적으로 적어 보세요.</li>
-        </ul>
-      </div>
-
-      <div class="ad-slot">
-        <span>Write Page AdSense Placeholder</span>
-        <small>글쓰기 페이지 광고 영역</small>
-      </div>
-    </aside>
+  <div class="container">
+    <h1>글쓰기</h1>
+    <% if (error) { %>
+      <div class="alert error"><%= error %></div>
+    <% } %>
+    <form method="POST" action="/community/write" class="stack-form">
+      <label>
+        게시판
+        <select name="board" required>
+          <% (communityBoards || []).forEach((b) => { %>
+            <option value="<%= b.label %>" <%= formData.board === b.label ? "selected" : "" %>><%= b.label %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>
+        제목
+        <input type="text" name="title" value="<%= formData.title %>" required />
+      </label>
+      <label>
+        내용
+        <textarea name="content" rows="10" required><%= formData.content %></textarea>
+      </label>
+      <label>
+        지역
+        <select name="region">
+          <% communityRegions.forEach((region) => { %>
+            <option value="<%= region %>" <%= formData.region === region ? "selected" : "" %>><%= region %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>
+        구·군
+        <input type="text" name="district" value="<%= formData.district %>" />
+      </label>
+      <button class="button button-primary" type="submit">등록</button>
+    </form>
+    <p><a href="/community">목록</a></p>
   </div>
 </section>

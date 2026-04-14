@@ -1,6 +1,76 @@
 const db = require("../../config/db");
 const userModel = require("./userModel");
 
+const COMMUNITY_BOARDS = [
+  { slug: "free", label: "자유게시판" },
+  { slug: "jeonse", label: "전세/월세 질문" },
+  { slug: "sale", label: "매매 고민" },
+  { slug: "region", label: "지역 정보" },
+  { slug: "review", label: "후기" }
+];
+
+const BOARD_LABELS_CYCLE = COMMUNITY_BOARDS.map((b) => b.label);
+
+function defaultBoardPair() {
+  const first = COMMUNITY_BOARDS[0];
+  return {
+    slug: String(first?.slug || "free").trim() || "free",
+    label: String(first?.label || "자유게시판").trim() || "자유게시판"
+  };
+}
+
+function resolveBoardFromQuery(queryVal) {
+  const v = String(queryVal ?? "").trim();
+  const fallback = defaultBoardPair();
+  if (!COMMUNITY_BOARDS.length) {
+    return fallback;
+  }
+  if (!v) {
+    return fallback;
+  }
+  const lower = v.toLowerCase();
+  const bySlug = COMMUNITY_BOARDS.find((b) => b.slug === lower);
+  if (bySlug) {
+    return {
+      slug: String(bySlug?.slug || fallback.slug).trim() || fallback.slug,
+      label: String(bySlug?.label || fallback.label).trim() || fallback.label
+    };
+  }
+  const byLabel = COMMUNITY_BOARDS.find((b) => b.label === v);
+  if (byLabel) {
+    return {
+      slug: String(byLabel?.slug || fallback.slug).trim() || fallback.slug,
+      label: String(byLabel?.label || fallback.label).trim() || fallback.label
+    };
+  }
+  return fallback;
+}
+
+function normalizeBoardLabel(value) {
+  const v = String(value ?? "").trim();
+  const fallback = defaultBoardPair().label;
+  if (!COMMUNITY_BOARDS.length) {
+    return fallback;
+  }
+  const byLabel = COMMUNITY_BOARDS.find((b) => b.label === v);
+  if (byLabel) {
+    return String(byLabel?.label || fallback).trim() || fallback;
+  }
+  const lower = v.toLowerCase();
+  const bySlug = COMMUNITY_BOARDS.find((b) => b.slug === lower);
+  if (bySlug) {
+    return String(bySlug?.label || fallback).trim() || fallback;
+  }
+  return fallback;
+}
+
+function fallbackBoardForPost(post) {
+  if (post.board) {
+    return post.board;
+  }
+  return BOARD_LABELS_CYCLE[(Number(post.id) - 1) % BOARD_LABELS_CYCLE.length];
+}
+
 let fallbackUserId = 3;
 let fallbackPostId = 12;
 let fallbackCommentId = 4;
@@ -242,7 +312,10 @@ function getFallbackPostSummary(post) {
   return {
     ...post,
     author_name: author.username,
-    comment_count: commentCount
+    comment_count: commentCount,
+    district: post.district || "",
+    board: fallbackBoardForPost(post),
+    views: post.views_count ?? post.views ?? 0
   };
 }
 
@@ -294,7 +367,9 @@ async function getAllPosts(filters = {}) {
         p.excerpt,
         p.category,
         p.region,
-        p.views_count,
+        p.district,
+        p.board,
+        p.views_count AS views,
         p.created_at,
         u.username AS author_name,
         COUNT(c.id) AS comment_count
@@ -302,7 +377,7 @@ async function getAllPosts(filters = {}) {
       INNER JOIN users u ON u.id = p.user_id
       LEFT JOIN comments c ON c.post_id = p.id
       WHERE p.region LIKE ?
-      GROUP BY p.id, p.title, p.slug, p.excerpt, p.category, p.region, p.views_count, p.created_at, u.username
+      GROUP BY p.id, p.title, p.slug, p.excerpt, p.category, p.region, p.district, p.board, p.views_count, p.created_at, u.username
       ORDER BY p.created_at DESC`
       : `SELECT
         p.id,
@@ -311,14 +386,16 @@ async function getAllPosts(filters = {}) {
         p.excerpt,
         p.category,
         p.region,
-        p.views_count,
+        p.district,
+        p.board,
+        p.views_count AS views,
         p.created_at,
         u.username AS author_name,
         COUNT(c.id) AS comment_count
       FROM posts p
       INNER JOIN users u ON u.id = p.user_id
       LEFT JOIN comments c ON c.post_id = p.id
-      GROUP BY p.id, p.title, p.slug, p.excerpt, p.category, p.region, p.views_count, p.created_at, u.username
+      GROUP BY p.id, p.title, p.slug, p.excerpt, p.category, p.region, p.district, p.board, p.views_count, p.created_at, u.username
       ORDER BY p.created_at DESC`;
 
     return await db.query(queryText, regionFilter ? [regionFilter.value] : []);
@@ -330,13 +407,183 @@ async function getAllPosts(filters = {}) {
   }
 }
 
+async function getPostsByBoard(boardLabel, filters = {}, options = {}) {
+  const label = normalizeBoardLabel(boardLabel);
+  const regionFilter = buildRegionFilter(filters);
+  const propagateDbError = Boolean(options.propagateDbError);
+
+  try {
+    const queryText = regionFilter
+      ? `SELECT
+        p.id,
+        p.title,
+        p.slug,
+        p.excerpt,
+        p.category,
+        p.region,
+        p.district,
+        p.board,
+        p.views_count AS views,
+        p.created_at,
+        u.username AS author_name,
+        COUNT(c.id) AS comment_count
+      FROM posts p
+      INNER JOIN users u ON u.id = p.user_id
+      LEFT JOIN comments c ON c.post_id = p.id
+      WHERE p.board = ? AND p.region LIKE ?
+      GROUP BY p.id, p.title, p.slug, p.excerpt, p.category, p.region, p.district, p.board, p.views_count, p.created_at, u.username
+      ORDER BY p.created_at DESC`
+      : `SELECT
+        p.id,
+        p.title,
+        p.slug,
+        p.excerpt,
+        p.category,
+        p.region,
+        p.district,
+        p.board,
+        p.views_count AS views,
+        p.created_at,
+        u.username AS author_name,
+        COUNT(c.id) AS comment_count
+      FROM posts p
+      INNER JOIN users u ON u.id = p.user_id
+      LEFT JOIN comments c ON c.post_id = p.id
+      WHERE p.board = ?
+      GROUP BY p.id, p.title, p.slug, p.excerpt, p.category, p.region, p.district, p.board, p.views_count, p.created_at, u.username
+      ORDER BY p.created_at DESC`;
+
+    return await db.query(
+      queryText,
+      regionFilter ? [label, regionFilter.value] : [label]
+    );
+  } catch (error) {
+    console.error("[postModel.getPostsByBoard] DB error:", error);
+    if (propagateDbError) {
+      throw error;
+    }
+    return [...fallbackPosts]
+      .filter(
+        (post) =>
+          fallbackBoardForPost(post) === label && matchesRegion(post.region, filters)
+      )
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .map(getFallbackPostSummary);
+  }
+}
+
+function mapFallbackSidebarRow(post) {
+  return {
+    id: post.id,
+    title: post.title,
+    views: post.views_count ?? 0,
+    created_at: post.created_at,
+    board: fallbackBoardForPost(post)
+  };
+}
+
+async function getPopularPostsLastDays(days = 7, limit = 10, options = {}) {
+  const safeDays = Math.min(Math.max(Number(days) || 7, 1), 90);
+  const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
+  const propagateDbError = Boolean(options.propagateDbError);
+
+  try {
+    return await db.query(
+      `SELECT
+        p.id,
+        p.title,
+        p.board,
+        p.views_count AS views,
+        p.created_at
+      FROM posts p
+      INNER JOIN users u ON u.id = p.user_id
+      WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL ${safeDays} DAY)
+      ORDER BY p.views_count DESC, p.created_at DESC
+      LIMIT ?`,
+      [safeLimit]
+    );
+  } catch (error) {
+    console.error("[postModel.getPopularPostsLastDays] DB error:", error);
+    if (propagateDbError) {
+      throw error;
+    }
+    const cutoff = Date.now() - safeDays * 86400000;
+    return [...fallbackPosts]
+      .filter((post) => new Date(post.created_at).getTime() >= cutoff)
+      .sort((a, b) => (b.views_count || 0) - (a.views_count || 0))
+      .slice(0, safeLimit)
+      .map(mapFallbackSidebarRow);
+  }
+}
+
+async function getRecentPostsGlobal(limit = 10, options = {}) {
+  const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
+  const propagateDbError = Boolean(options.propagateDbError);
+
+  try {
+    return await db.query(
+      `SELECT
+        p.id,
+        p.title,
+        p.board,
+        p.views_count AS views,
+        p.created_at
+      FROM posts p
+      INNER JOIN users u ON u.id = p.user_id
+      ORDER BY p.created_at DESC
+      LIMIT ?`,
+      [safeLimit]
+    );
+  } catch (error) {
+    console.error("[postModel.getRecentPostsGlobal] DB error:", error);
+    if (propagateDbError) {
+      throw error;
+    }
+    return [...fallbackPosts]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, safeLimit)
+      .map(mapFallbackSidebarRow);
+  }
+}
+
+async function getMostViewedPosts(limit = 10) {
+  const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
+
+  try {
+    return await db.query(
+      `SELECT
+        p.id,
+        p.title,
+        p.board,
+        p.views_count AS views,
+        p.created_at
+      FROM posts p
+      INNER JOIN users u ON u.id = p.user_id
+      ORDER BY p.views_count DESC, p.created_at DESC
+      LIMIT ?`,
+      [safeLimit]
+    );
+  } catch (error) {
+    return [...fallbackPosts]
+      .sort((a, b) => (b.views_count || 0) - (a.views_count || 0))
+      .slice(0, safeLimit)
+      .map(mapFallbackSidebarRow);
+  }
+}
+
+async function incrementPostViews(postId) {
+  const numericId = Number(postId);
+  if (!Number.isFinite(numericId) || numericId <= 0) {
+    return;
+  }
+  await db.query("UPDATE posts SET views_count = views_count + 1 WHERE id = ?", [numericId]);
+}
+
 async function getPostById(postId) {
   const numericId = Number(postId);
 
   try {
-    await db.query("UPDATE posts SET views_count = views_count + 1 WHERE id = ?", [
-      numericId
-    ]);
+    await incrementPostViews(numericId);
 
     const posts = await db.query(
       `SELECT
@@ -347,6 +594,9 @@ async function getPostById(postId) {
         p.excerpt,
         p.category,
         p.region,
+        p.district,
+        p.board,
+        p.views_count AS views,
         p.views_count,
         p.created_at,
         u.username AS author_name
@@ -398,18 +648,30 @@ async function getPostById(postId) {
 
     return {
       ...post,
+      views: post.views_count,
+      board: fallbackBoardForPost(post),
       author_name: author.username,
       comments
     };
   }
 }
 
-async function createPost({ title, content, authorName, category, region }) {
+async function createPost({
+  title,
+  content,
+  authorName,
+  category,
+  region,
+  district = "",
+  board
+}) {
   const cleanTitle = String(title || "").trim();
   const cleanContent = String(content || "").trim();
   const cleanAuthorName = String(authorName || "").trim();
   const cleanCategory = String(category || "매매").trim();
   const cleanRegion = String(region || "전국").trim();
+  const cleanDistrict = String(district || "").trim();
+  const cleanBoard = normalizeBoardLabel(board);
   const slug = createSlug(cleanTitle);
   const excerpt = createExcerpt(cleanContent);
 
@@ -420,8 +682,8 @@ async function createPost({ title, content, authorName, category, region }) {
   try {
     const author = await userModel.findOrCreateByUsername(cleanAuthorName);
     const result = await db.query(
-      `INSERT INTO posts (user_id, title, slug, excerpt, content, category, region, views_count)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
+      `INSERT INTO posts (user_id, title, slug, excerpt, content, category, region, district, board, views_count)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
       [
         author.id,
         cleanTitle,
@@ -429,7 +691,9 @@ async function createPost({ title, content, authorName, category, region }) {
         excerpt,
         cleanContent,
         cleanCategory,
-        cleanRegion
+        cleanRegion,
+        cleanDistrict,
+        cleanBoard
       ]
     );
 
@@ -441,6 +705,8 @@ async function createPost({ title, content, authorName, category, region }) {
       content: cleanContent,
       category: cleanCategory,
       region: cleanRegion,
+      district: cleanDistrict,
+      board: cleanBoard,
       author_name: author.username
     };
   } catch (error) {
@@ -457,6 +723,8 @@ async function createPost({ title, content, authorName, category, region }) {
       content: cleanContent,
       category: cleanCategory,
       region: cleanRegion,
+      district: cleanDistrict,
+      board: cleanBoard,
       views_count: 0,
       created_at: new Date().toISOString()
     };
@@ -521,7 +789,15 @@ async function createComment(postId, { content, authorName }) {
 }
 
 module.exports = {
+  COMMUNITY_BOARDS,
+  resolveBoardFromQuery,
+  normalizeBoardLabel,
   getAllPosts,
+  getPostsByBoard,
+  getPopularPostsLastDays,
+  getRecentPostsGlobal,
+  getMostViewedPosts,
+  incrementPostViews,
   getPostById,
   createPost,
   createComment
